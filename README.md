@@ -1,6 +1,7 @@
 # Weaponized Defense Against Prompt Injection
 ## Comprehensive Analysis and Improvements
-
+Renee M Gagnon
+November 09, 2025
 ---
 
 ## Executive Summary
@@ -1104,7 +1105,7 @@ We welcome contributions! Areas of interest:
 ### Development Setup
 
 ```bash
-git clone https://github.com/yourusername/weaponized-defense
+git clone https://github.com/reneemgagnon/Prompt_Sentinel/tree/main
 cd weaponized-defense
 pip install -r requirements.txt
 pytest tests/
@@ -1114,7 +1115,7 @@ pytest tests/
 
 ## 📜 License
 
-MIT License - see LICENSE file
+
 
 ---
 
