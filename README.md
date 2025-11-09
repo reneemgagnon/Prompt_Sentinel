@@ -45,12 +45,6 @@ Instead of prompting models to "be careful" about injections, we:
 │   ├── ModularPolicyComposer          # Composable policy modules
 │   └── MultiPartyTrustManager         # Multiple signature authorities
 │
-├── comprehensive_analysis.md          # Deep dive analysis
-│   ├── Threat models & defenses
-│   ├── Novel improvements
-│   ├── Implementation roadmap
-│   ├── Performance analysis
-│   └── Research questions
 │
 ├── deployment_guide.md                # Production deployment
 │   ├── LangChain integration
