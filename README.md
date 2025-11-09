@@ -359,7 +359,8 @@ pytest tests/
 ---
 
 ## 📜 License
-
+No commerical use, no derivative use without Authors written permission/license. 
+Research and Academic use only At this time. 
 
 
 ---
@@ -373,7 +374,7 @@ pytest tests/
 ---
 
 ## 📞 Contact & Support
-
+renee@freedomfamilyconsulting.ca
 
 ---
 
@@ -425,6 +426,8 @@ pytest tests/
 
 **Built with 🔐 by security researchers, for secure AI**
 
-[Documentation](comprehensive_analysis.md) • [Deployment Guide](deployment_guide.md) • [GitHub](https://github.com)
+Renee M GAGNON
+Nov 09, 2025
+ • [Deployment Guide](https://github.com/reneemgagnon/Prompt_Sentinel/blob/main/deployment_guide.md) • [GitHub](https://github.com)
 
 </div>
