@@ -7,8 +7,8 @@ enforcement outside the model's context window.
 Core Principle: The LLM should never be the security boundary.
 Policy is enforced by code, verified by cryptography.
 
-Author: Collaborative design
-License: MIT
+© 2025 Renee M Gagnon. Licensed under CC BY-NC 4.0. Attribution required. Commercial use requires a separate license from the copyright holder
+Commercial use available — contact renee@Freedomfamilyconsulting.ca
 """
 
 import hashlib
@@ -558,3 +558,6 @@ if __name__ == "__main__":
     
     print("\n=== What the Model Sees ===")
     print(json.dumps(wrapper.get_model_context(), indent=2))
+
+    """© 2025 Renee M Gagnon. Licensed under CC BY-NC 4.0. Attribution required. Commercial use requires a separate license from the copyright holder
+Commercial use available — contact renee@Freedomfamilyconsulting.ca"""

@@ -1,5 +1,6 @@
 # 🔒 Weaponized Defense Against Prompt Injection
 ### Cryptographic Policy Enforcement for Large Language Models
+© 2025 Renee M Gagnon. Licensed under CC BY-NC 4.0. Attribution required. Commercial use requires a separate license from the copyright holder
 
 [![Security](https://img.shields.io/badge/security-cryptographic-green.svg)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)]()
@@ -425,7 +426,8 @@ renee@freedomfamilyconsulting.ca
 <div align="center">
 
 **Built with 🔐 by security researchers, for secure AI**
-
+© 2025 Renee M Gagnon. Licensed under CC BY-NC 4.0. Attribution required. Commercial use requires a separate license from the copyright holder
+Commercial use available — contact renee@Freedomfamilyconsulting.ca
 Renee M GAGNON
 Nov 09, 2025
  • [Deployment Guide](https://github.com/reneemgagnon/Prompt_Sentinel/blob/main/deployment_guide.md) • [GitHub](https://github.com)

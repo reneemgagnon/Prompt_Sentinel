@@ -3,6 +3,8 @@ Complete Multi-Party Trust Implementation
 ==========================================
 Shows how to properly register authorities with cryptographic keys
 and verify signed instructions from different trust domains.
+© 2025 Renee M Gagnon. Licensed under CC BY-NC 4.0. Attribution required. Commercial use requires a separate license from the copyright holder
+Commercial use available — contact renee@Freedomfamilyconsulting.ca
 """
 
 import sys
@@ -393,3 +395,6 @@ def demo_real_multi_party_trust():
 
 if __name__ == "__main__":
     demo_real_multi_party_trust()
+
+"""© 2025 Renee M Gagnon. Licensed under CC BY-NC 4.0. Attribution required. Commercial use requires a separate license from the copyright holder
+Commercial use available — contact renee@Freedomfamilyconsulting.ca"""

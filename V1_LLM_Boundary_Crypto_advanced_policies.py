@@ -9,6 +9,9 @@ Key additions:
 3. Context window poisoning defense
 4. Stateful session tracking
 5. Policy composition for modular security
+
+© 2025 Renee M Gagnon. Licensed under CC BY-NC 4.0. Attribution required. Commercial use requires a separate license from the copyright holder
+Commercial use available — contact renee@Freedomfamilyconsulting.ca
 """
 
 import hashlib
@@ -579,3 +582,6 @@ if __name__ == "__main__":
     print("Test 3: System Status")
     status = system.get_system_status()
     print(json.dumps(status, indent=2))
+
+"""© 2025 Renee M Gagnon. Licensed under CC BY-NC 4.0. Attribution required. Commercial use requires a separate license from the copyright holder
+Commercial use available — contact renee@Freedomfamilyconsulting.ca"""
