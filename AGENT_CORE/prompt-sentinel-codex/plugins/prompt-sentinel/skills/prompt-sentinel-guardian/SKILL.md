@@ -1,4 +1,4 @@
-﻿---
+---
 name: prompt-sentinel-guardian
 description: Protect coding-agent workflows with host-enforced policy checks, capability gates, tamper alerts, and audit-friendly denials. Use when Codex needs to harden tool execution, verify a proposed action before it runs, request approval for sensitive actions, detect prompt or config tampering, or explain how to proceed safely after Prompt_Sentinel blocks work.
 ---

@@ -1,8 +1,6 @@
-﻿---
+---
 name: prompt-sentinel
 description: Protect Claude Code workflows with Prompt_Sentinel. Use when a task involves sensitive shell, file, write, export, approval-gated, or instruction-tampering risk, or when you need to evaluate whether a proposed action should be allowed before it runs.
-user-invocable: true
-disable-model-invocation: false
 ---
 
 Use Prompt_Sentinel as a trusted action boundary, not just a prompt rule.
@@ -19,5 +17,5 @@ Use Prompt_Sentinel as a trusted action boundary, not just a prompt rule.
 ## What to consult
 
 - Read `references/policy-model.md` for the trust model.
-- Read `references/plugin-usage.md` for how the plugin components fit together.
-- Use the plugin hooks for enforcement and the plugin agent for deeper guarded reviews.
+- Read `references/plugin-usage.md` for how the package fits together.
+- Use the bundled hooks for enforcement and the bundled agent for deeper guarded reviews.
