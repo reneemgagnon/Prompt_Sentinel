@@ -1,0 +1,46 @@
+{
+  "$schema": "https://openai.com/schemas/codex-plugin/v1",
+  "name": "prompt-sentinel",
+  "version": "0.1.0",
+  "display_name": "Prompt Sentinel",
+  "description": "Host-enforced guardrails for coding-agent actions. Provides policy-based tool authorization, Ed25519 signed capability tickets, prompt-override detection, and tamper-evident audit logging.",
+  "author": "Prompt Sentinel Contributors",
+  "license": "MIT",
+  "homepage": "https://github.com/prompt-sentinel/prompt-sentinel",
+  "entry_point": "skills/prompt-sentinel-guardian/SKILL.md",
+  "skills": [
+    {
+      "name": "prompt-sentinel-guardian",
+      "path": "skills/prompt-sentinel-guardian",
+      "description": "Evaluate tool proposals against host-enforced policy, request capability tickets for approval-gated actions, and explain denials safely."
+    }
+  ],
+  "scripts": {
+    "check_proposal": "skills/prompt-sentinel-guardian/scripts/check_proposal.py",
+    "request_capability": "skills/prompt-sentinel-guardian/scripts/request_capability.py",
+    "explain_denial": "skills/prompt-sentinel-guardian/scripts/explain_denial.py"
+  },
+  "references": {
+    "policy_model": "skills/prompt-sentinel-guardian/references/policy-model.md",
+    "operating_modes": "skills/prompt-sentinel-guardian/references/operating-modes.md",
+    "trusted_launch": "skills/prompt-sentinel-guardian/references/trusted-launch.md"
+  },
+  "dependencies": {
+    "runtime": "prompt-sentinel-core>=0.1.0",
+    "python": ">=3.11"
+  },
+  "triggers": [
+    "harden agent workflow",
+    "protect tool calls",
+    "add approval gates",
+    "prompt injection protection",
+    "enforce path restrictions",
+    "add audit logging"
+  ],
+  "permissions": {
+    "file_read": true,
+    "file_write": false,
+    "network": false,
+    "shell": true
+  }
+}

@@ -1,0 +1,26 @@
+﻿{
+  "tool_permissions": {
+    "echo": {
+      "allowed_params": ["message", "any"],
+      "max_calls_per_session": 20
+    },
+    "calc_sha256": {
+      "allowed_params": ["text"],
+      "max_calls_per_session": 50
+    },
+    "file_read": {
+      "allowed_params": ["path"],
+      "path_whitelist": ["workspace/*", "docs/*", "*.md"],
+      "max_calls_per_session": 10
+    },
+    "sensitive_export": {
+      "allowed_params": ["dataset", "format"],
+      "max_calls_per_session": 2
+    }
+  },
+  "capability_required_tools": ["sensitive_export"],
+  "meta": {
+    "policy_name": "developer-default",
+    "notes": "Starter policy for coding-agent protection"
+  }
+}

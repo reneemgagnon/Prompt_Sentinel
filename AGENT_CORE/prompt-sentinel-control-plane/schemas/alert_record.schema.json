@@ -1,0 +1,14 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PromptSentinelAlertRecord",
+  "type": "object",
+  "required": ["event", "severity", "source"],
+  "properties": {
+    "event": {"type": "string"},
+    "severity": {"type": "string"},
+    "source": {"type": "string"},
+    "session_id": {"type": ["string", "null"]},
+    "tool_name": {"type": ["string", "null"]},
+    "payload": {"type": "object"}
+  }
+}

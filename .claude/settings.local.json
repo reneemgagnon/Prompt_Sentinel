@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs wc:*)",
+      "Bash(find /e/REPOS/Prompt_Sentinel/AGENT_CORE -type d -not -path */.* -not -path */__pycache__*)",
+      "Bash(python -m pytest tests/ -v)",
+      "Bash(./Crypto_Boundary.venv/Scripts/python.exe -m pytest --version)",
+      "Bash(./Crypto_Boundary.venv/Scripts/pip.exe install:*)",
+      "Bash(PYTHONPATH=\"AGENT_CORE/prompt-sentinel-core/src\" ./Crypto_Boundary.venv/Scripts/python.exe -m pytest AGENT_CORE/prompt-sentinel-core/tests/ -v)",
+      "Bash(PYTHONPATH=\"AGENT_CORE/prompt-sentinel-control-plane/src\" ./Crypto_Boundary.venv/Scripts/python.exe -m pytest AGENT_CORE/prompt-sentinel-control-plane/tests/ -v)"
+    ]
+  }
+}

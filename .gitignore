@@ -1,0 +1,10 @@
+/AGENT_CORE/prompt-sentinel-claude/hooks/__pycache__
+/AGENT_CORE/prompt-sentinel-codex/plugins/prompt-sentinel/skills/prompt-sentinel-guardian/scripts/__pycache__
+/AGENT_CORE/prompt-sentinel-control-plane/src/prompt_sentinel_control_plane/__pycache__
+/AGENT_CORE/prompt-sentinel-core/src/prompt_sentinel/__pycache__
+/AGENT_CORE/prompt-sentinel-core/src/prompt_sentinel/cli/__pycache__
+/AGENT_CORE/prompt-sentinel-core/src/prompt_sentinel/core/__pycache__
+/AGENT_CORE/prompt-sentinel-core/src/prompt_sentinel/scripts/__pycache__
+/AGENT_CORE/prompt-sentinel-core/tests/__pycache__
+/AGENT_CORE/prompt-sentinel-core/src/prompt_sentinel/adapters/__pycache__
+/AGENT_CORE/prompt-sentinel-control-plane/tests/__pycache__

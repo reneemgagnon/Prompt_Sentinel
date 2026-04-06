@@ -1,0 +1,16 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PromptSentinelPolicyBundle",
+  "type": "object",
+  "required": ["policy_id", "version", "tenant", "bundle"],
+  "properties": {
+    "policy_id": {"type": "string"},
+    "version": {"type": "string"},
+    "tenant": {"type": "string"},
+    "labels": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "bundle": {"type": "object"}
+  }
+}

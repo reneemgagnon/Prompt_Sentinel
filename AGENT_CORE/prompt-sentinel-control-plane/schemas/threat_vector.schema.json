@@ -1,0 +1,20 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PromptSentinelThreatVectorRecord",
+  "type": "object",
+  "required": ["vector_id", "class_name", "summary"],
+  "properties": {
+    "vector_id": {"type": "string"},
+    "class_name": {"type": "string"},
+    "summary": {"type": "string"},
+    "fingerprints": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "redacted_examples": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "approved_for_sharing": {"type": "boolean"}
+  }
+}

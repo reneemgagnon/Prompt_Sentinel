@@ -1,0 +1,21 @@
+﻿{
+  "tool_permissions": {
+    "Bash": {
+      "allowed_params": ["command", "cmd", "input", "stdin", "description"],
+      "max_calls_per_session": 25
+    },
+    "Edit": {
+      "allowed_params": ["file_path", "path", "old_string", "new_string", "replace_all"],
+      "max_calls_per_session": 40
+    },
+    "Write": {
+      "allowed_params": ["file_path", "path", "content", "append", "prepend"],
+      "max_calls_per_session": 40
+    }
+  },
+  "capability_required_tools": [],
+  "meta": {
+    "policy_name": "claude-default",
+    "notes": "Starter Claude Code policy for Prompt_Sentinel hooks"
+  }
+}

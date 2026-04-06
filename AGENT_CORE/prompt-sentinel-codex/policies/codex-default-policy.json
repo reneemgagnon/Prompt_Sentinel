@@ -1,0 +1,26 @@
+﻿{
+  "tool_permissions": {
+    "file_read": {
+      "allowed_params": ["path"],
+      "path_whitelist": ["*.md", "docs/*", "src/*", "AGENT_CORE/*"],
+      "max_calls_per_session": 20
+    },
+    "calc_sha256": {
+      "allowed_params": ["text"],
+      "max_calls_per_session": 100
+    },
+    "echo": {
+      "allowed_params": ["message", "any"],
+      "max_calls_per_session": 50
+    },
+    "sensitive_export": {
+      "allowed_params": ["dataset", "format"],
+      "max_calls_per_session": 2
+    }
+  },
+  "capability_required_tools": ["sensitive_export"],
+  "meta": {
+    "policy_name": "codex-default",
+    "notes": "Starter Codex policy for Prompt_Sentinel helper workflows"
+  }
+}
