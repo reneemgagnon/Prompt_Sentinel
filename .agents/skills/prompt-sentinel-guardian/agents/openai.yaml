@@ -1,0 +1,6 @@
+﻿interface:
+  display_name: "Prompt Sentinel Guardian"
+  short_description: "Evaluate proposed actions against Prompt_Sentinel policy."
+  default_prompt: "Use Prompt Sentinel Guardian to harden this coding-agent workflow."
+policy:
+  allow_implicit_invocation: false

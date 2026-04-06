@@ -7,7 +7,8 @@
       "Bash(./Crypto_Boundary.venv/Scripts/python.exe -m pytest --version)",
       "Bash(./Crypto_Boundary.venv/Scripts/pip.exe install:*)",
       "Bash(PYTHONPATH=\"AGENT_CORE/prompt-sentinel-core/src\" ./Crypto_Boundary.venv/Scripts/python.exe -m pytest AGENT_CORE/prompt-sentinel-core/tests/ -v)",
-      "Bash(PYTHONPATH=\"AGENT_CORE/prompt-sentinel-control-plane/src\" ./Crypto_Boundary.venv/Scripts/python.exe -m pytest AGENT_CORE/prompt-sentinel-control-plane/tests/ -v)"
+      "Bash(PYTHONPATH=\"AGENT_CORE/prompt-sentinel-control-plane/src\" ./Crypto_Boundary.venv/Scripts/python.exe -m pytest AGENT_CORE/prompt-sentinel-control-plane/tests/ -v)",
+      "WebSearch"
     ]
   }
 }
