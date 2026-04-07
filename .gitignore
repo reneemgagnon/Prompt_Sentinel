@@ -10,3 +10,9 @@
 /AGENT_CORE/prompt-sentinel-control-plane/tests/__pycache__
 /.agents/skills/prompt-sentinel-guardian/scripts/__pycache__
 /AGENT_CORE/prompt-sentinel-claude/scripts/__pycache__
+/AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/src/prompt_sentinel/__pycache__
+/AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/src/prompt_sentinel/adapters/__pycache__
+/AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/src/prompt_sentinel/cli/__pycache__
+/AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/src/prompt_sentinel/core/__pycache__
+/AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/src/prompt_sentinel/scripts/__pycache__
+/AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/tests/__pycache__

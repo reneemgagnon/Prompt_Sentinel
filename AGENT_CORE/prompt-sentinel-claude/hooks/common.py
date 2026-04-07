@@ -10,8 +10,16 @@ from typing import Any, Dict
 
 ALERT_PATH = Path(".claude/prompt-sentinel.alerts.jsonl")
 AUDIT_PATH = Path(".claude/prompt-sentinel.audit.jsonl")
-CORE_SRC = Path(__file__).resolve().parents[2] / "prompt-sentinel-core" / "src"
-BUNDLED_POLICY_PATH = Path(__file__).resolve().parents[1] / "policies" / "claude-default-policy.json"
+
+# Resolve the package root (prompt-sentinel-claude/) from hooks/common.py
+_PACKAGE_ROOT = Path(__file__).resolve().parents[1]
+
+# Core runtime is now bundled inside the package root
+CORE_SRC = _PACKAGE_ROOT / "prompt-sentinel-core" / "src"
+
+# Policy lookup: project-local override > package-bundled claude policy > core default policy
+BUNDLED_POLICY_PATH = _PACKAGE_ROOT / "policies" / "claude-default-policy.json"
+CORE_POLICY_PATH = _PACKAGE_ROOT / "prompt-sentinel-core" / "src" / "prompt_sentinel" / "policies" / "default-policy.json"
 LOCAL_POLICY_PATH = Path(".claude/prompt-sentinel.policy.json")
 LOCAL_MANIFEST_PATH = Path(".claude/prompt-sentinel.manifest.json")
 
@@ -42,7 +50,14 @@ def emit_alert(payload: dict) -> None:
 
 
 def resolve_policy_path() -> Path:
-    return LOCAL_POLICY_PATH if LOCAL_POLICY_PATH.exists() else BUNDLED_POLICY_PATH
+    if LOCAL_POLICY_PATH.exists():
+        return LOCAL_POLICY_PATH
+    if BUNDLED_POLICY_PATH.exists():
+        return BUNDLED_POLICY_PATH
+    if CORE_POLICY_PATH.exists():
+        return CORE_POLICY_PATH
+    # Fall back to bundled path and let downstream raise if missing
+    return BUNDLED_POLICY_PATH
 
 
 def normalize_tool_proposal(event: Dict[str, Any]) -> Dict[str, Any]:

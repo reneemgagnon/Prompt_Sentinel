@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PromptSentinelPolicyBundle",
+  "type": "object",
+  "required": ["policy_id", "version", "tenant", "bundle"],
+  "properties": {
+    "policy_id": {"type": "string"},
+    "version": {"type": "string"},
+    "tenant": {"type": "string"},
+    "labels": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "inheritance": {
+      "type": "object",
+      "properties": {
+        "extends": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": true
+    },
+    "bundle": {
+      "type": "object",
+      "required": ["tool_permissions"],
+      "properties": {
+        "tool_permissions": {"type": "object"},
+        "capability_required_tools": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "sensitive_action_classes": {"type": "object"},
+        "meta": {"type": "object"}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

@@ -19,3 +19,10 @@ Use Prompt_Sentinel as a trusted action boundary, not just a prompt rule.
 - Read `references/policy-model.md` for the trust model.
 - Read `references/plugin-usage.md` for how the package fits together.
 - Use the bundled hooks for enforcement and the bundled agent for deeper guarded reviews.
+
+## Bundled runtime
+
+This skill carries `prompt-sentinel-core/` inside it. Hooks resolve the
+runtime automatically from the package root. No pip install is required for
+enforcement. Optionally install the core for CLI access:
+`pip install ./prompt-sentinel-core`

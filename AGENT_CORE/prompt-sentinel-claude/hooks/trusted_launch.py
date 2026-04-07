@@ -4,29 +4,36 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from common import AUDIT_PATH, append_jsonl, emit_alert, read_event, verify_manifest_if_present, write_response
+from common import _PACKAGE_ROOT, AUDIT_PATH, append_jsonl, emit_alert, read_event, verify_manifest_if_present, write_response
 
 
+# Project-level instruction files (always checked relative to cwd)
 WATCH_FILES = [
     Path("CLAUDE.md"),
     Path(".claude/settings.json"),
     Path(".claude/settings.local.json"),
 ]
 
-HOOK_FILES = [
-    Path(".claude/hooks/common.py"),
-    Path(".claude/hooks/trusted_launch.py"),
-    Path(".claude/hooks/user_prompt_submit.py"),
-    Path(".claude/hooks/pre_tool_firewall.py"),
-    Path(".claude/hooks/config_tamper_alert.py"),
-    Path(".claude/hooks/post_tool_use.py"),
-    Path(".claude/hooks/stop.py"),
+# Hook files — check both the plugin-bundled location and legacy project-local paths
+_HOOK_NAMES = [
+    "common.py",
+    "trusted_launch.py",
+    "user_prompt_submit.py",
+    "pre_tool_firewall.py",
+    "config_tamper_alert.py",
+    "post_tool_use.py",
+    "stop.py",
 ]
+
+HOOK_FILES_PLUGIN = [_PACKAGE_ROOT / "hooks" / name for name in _HOOK_NAMES]
+HOOK_FILES_LOCAL = [Path(".claude/hooks") / name for name in _HOOK_NAMES]
 
 
 def main() -> int:
     event = read_event()
-    all_watched = WATCH_FILES + HOOK_FILES
+    # Use plugin-bundled hooks if they exist, otherwise fall back to project-local
+    hook_files = HOOK_FILES_PLUGIN if HOOK_FILES_PLUGIN[0].exists() else HOOK_FILES_LOCAL
+    all_watched = WATCH_FILES + hook_files
     records = {str(path): ("present" if path.exists() else "missing") for path in all_watched}
     mismatches = verify_manifest_if_present()
     append_jsonl(

@@ -1,0 +1,48 @@
+﻿{
+  "tool_permissions": {
+    "echo": {
+      "allowed_params": ["message", "any"],
+      "max_calls_per_session": 20,
+      "retention_class": "standard",
+      "sensitive_action_class": "standard"
+    },
+    "calc_sha256": {
+      "allowed_params": ["text"],
+      "max_calls_per_session": 50,
+      "retention_class": "standard",
+      "sensitive_action_class": "standard"
+    },
+    "file_read": {
+      "allowed_params": ["path"],
+      "path_whitelist": ["workspace/*", "docs/*", "*.md"],
+      "max_calls_per_session": 10,
+      "retention_class": "security-audit",
+      "sensitive_action_class": "restricted",
+      "approval_scope": "repo-boundary"
+    },
+    "sensitive_export": {
+      "allowed_params": ["dataset", "format"],
+      "max_calls_per_session": 2,
+      "retention_class": "compliance",
+      "sensitive_action_class": "approval-gated",
+      "approval_scope": "data-export"
+    }
+  },
+  "capability_required_tools": ["sensitive_export"],
+  "sensitive_action_classes": {
+    "standard": {
+      "description": "Routine developer actions"
+    },
+    "restricted": {
+      "description": "Actions that remain host-enforced and tightly audited"
+    },
+    "approval-gated": {
+      "description": "Actions that require a signed approval ticket"
+    }
+  },
+  "meta": {
+    "policy_name": "developer-default",
+    "tier": "core",
+    "notes": "Starter policy for coding-agent protection"
+  }
+}

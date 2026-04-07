@@ -1,0 +1,51 @@
+{
+  "tool_permissions": {
+    "echo": {
+      "allowed_params": ["message", "any"],
+      "max_calls_per_session": 100,
+      "retention_class": "standard",
+      "sensitive_action_class": "standard"
+    },
+    "calc_sha256": {
+      "allowed_params": ["text"],
+      "max_calls_per_session": 200,
+      "retention_class": "standard",
+      "sensitive_action_class": "standard"
+    },
+    "file_read": {
+      "allowed_params": ["path"],
+      "path_whitelist": ["workspace/*", "docs/*", "src/*", "*.md", "policies/*"],
+      "max_calls_per_session": 40,
+      "retention_class": "long-retention-audit",
+      "sensitive_action_class": "restricted",
+      "approval_scope": "repo-boundary"
+    },
+    "sensitive_export": {
+      "allowed_params": ["dataset", "format"],
+      "max_calls_per_session": 5,
+      "retention_class": "compliance-hold",
+      "sensitive_action_class": "approval-gated",
+      "approval_scope": "data-export"
+    }
+  },
+  "capability_required_tools": ["sensitive_export"],
+  "sensitive_action_classes": {
+    "standard": {
+      "description": "Routine developer actions"
+    },
+    "restricted": {
+      "description": "Actions that require tighter retention and monitoring"
+    },
+    "approval-gated": {
+      "description": "Actions that require signed approval workflows"
+    }
+  },
+  "inheritance": {
+    "extends": ["guard-team"]
+  },
+  "meta": {
+    "policy_name": "enterprise-default",
+    "tier": "enterprise",
+    "notes": "Enterprise policy pack with stricter retention and approval defaults"
+  }
+}

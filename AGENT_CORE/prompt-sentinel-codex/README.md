@@ -1,15 +1,14 @@
-﻿# prompt-sentinel-codex
+# prompt-sentinel-codex
 
 Codex-facing distribution layer for Prompt_Sentinel.
 
 ## Includes
 
 - local plugin scaffold
-- reusable agent skill
-- helper scripts that can call `prompt-sentinel`
-- reference notes for policy and operating modes
+- reusable guarded-workflow skill
+- helper scripts that resolve the packaged `prompt-sentinel-core` runtime
+- policy and operating-mode references for Codex users
 
-## Next step
+## Product Role
 
-Replace the starter helper scripts with calls into the installed
-`prompt-sentinel-core` package or a bundled runtime binary.
+This package is the agent-native UX layer for the Guard add-on. The runtime enforces policy; the Codex plugin and skill teach the agent how to request approvals, explain denials, and stay inside the trusted boundary.

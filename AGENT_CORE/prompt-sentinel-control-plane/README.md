@@ -1,16 +1,20 @@
-﻿# prompt-sentinel-control-plane
+# prompt-sentinel-control-plane
 
-Control-plane scaffold for Prompt_Sentinel.
+Enterprise control-plane scaffold for Prompt_Sentinel.
 
-## Target responsibilities
+## Target Responsibilities
 
-- policy distribution
-- approval and capability workflows
-- key metadata and rotation orchestration
-- audit and alert export
-- sanitized threat-vector sharing
+- policy distribution and inheritance across teams and repos
+- approval and capability workflows for guarded actions
+- key metadata, rotation orchestration, and separation-of-duty hooks
+- audit search, export, and SIEM delivery
+- sanitized threat-vector sharing across deployments
 
-## Current state
+## In This Repo
 
-This is a service skeleton with placeholder endpoints and schemas. It is meant
-to become the team and enterprise management layer above `prompt-sentinel-core`.
+- `src/prompt_sentinel_control_plane/`: FastAPI-style service skeleton
+- `schemas/`: enterprise bundle, approval, alert, and threat-vector schemas
+
+## Product Role
+
+This package is the Enterprise layer above `prompt-sentinel-core`. It is where Prompt_Sentinel grows from a paid Guard add-on into centralized enterprise governance.

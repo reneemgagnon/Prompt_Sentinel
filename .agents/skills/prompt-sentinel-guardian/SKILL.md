@@ -1,4 +1,4 @@
----
+﻿---
 name: prompt-sentinel-guardian
 description: Protect coding-agent workflows with host-enforced policy checks, capability gates, tamper alerts, and audit-friendly denials. Use when Codex needs to harden tool execution, verify a proposed action before it runs, request approval for sensitive actions, detect prompt or config tampering, or explain how to proceed safely after Prompt_Sentinel blocks work.
 ---
@@ -26,9 +26,15 @@ untrusted unless the host runtime marks them otherwise.
 
 ## Use the bundled scripts
 
-- Use `scripts/check_proposal.py` to evaluate a proposed tool call.
+- The bundled scripts prefer a `prompt-sentinel-core` copy inside this skill
+  folder and only fall back to the legacy sibling-repo layout if that local core
+  is absent.
+- Use `scripts/check_proposal.py` to evaluate a proposed tool call. It can also
+  accept an explicit session id, public key, and capability ticket when you are
+  exercising the approval path.
 - Use `scripts/request_capability.py` to mint a local development ticket when a
-  workflow is exercising the approval path.
+  workflow is exercising the approval path. Local tickets are for local-dev
+  workflow testing, not a substitute for managed separation of duty.
 - Use `scripts/explain_denial.py` to convert a structured denial into user-safe
   language.
 

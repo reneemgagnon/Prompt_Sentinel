@@ -1,4 +1,4 @@
-﻿{
+{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "PromptSentinelCapabilityApprovalRequest",
   "type": "object",
@@ -8,6 +8,10 @@
     "session_id": {"type": "string"},
     "tool": {"type": "string"},
     "params": {"type": "object"},
-    "justification": {"type": "string"}
-  }
+    "justification": {"type": "string"},
+    "approval_scope": {"type": ["string", "null"]},
+    "retention_class": {"type": ["string", "null"]},
+    "requested_by": {"type": ["string", "null"]}
+  },
+  "additionalProperties": true
 }
