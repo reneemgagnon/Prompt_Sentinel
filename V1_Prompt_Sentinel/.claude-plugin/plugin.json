@@ -1,0 +1,8 @@
+﻿{
+  "name": "prompt-sentinel",
+  "version": "0.1.0",
+  "description": "Prompt_Sentinel plugin for Claude Code with skills, agents, and enforcement hooks.",
+  "skills": "./",
+  "agents": "./agents/",
+  "hooks": "./hooks/hooks.json"
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PromptSentinelCapabilityTicket",
+  "type": "object",
+  "required": [
+    "key_id",
+    "authority",
+    "audience",
+    "issued_at",
+    "expires_at",
+    "nonce",
+    "operation",
+    "session_id",
+    "scope",
+    "params_hash_b64",
+    "signature_b64"
+  ],
+  "properties": {
+    "key_id": {"type": "string"},
+    "authority": {"type": "string"},
+    "audience": {"type": "string"},
+    "issued_at": {"type": "integer"},
+    "expires_at": {"type": "integer"},
+    "nonce": {"type": "string"},
+    "operation": {"type": "string"},
+    "session_id": {"type": "string"},
+    "scope": {"type": "object"},
+    "params_hash_b64": {"type": "string"},
+    "signature_b64": {"type": "string"}
+  },
+  "additionalProperties": false
+}

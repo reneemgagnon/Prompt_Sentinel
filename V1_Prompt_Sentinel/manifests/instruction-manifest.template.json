@@ -1,0 +1,12 @@
+{
+  "CLAUDE.md": "replace-with-sha256",
+  ".claude/settings.json": "replace-with-sha256",
+  ".claude/settings.local.json": "replace-with-sha256",
+  ".claude/hooks/common.py": "replace-with-sha256",
+  ".claude/hooks/trusted_launch.py": "replace-with-sha256",
+  ".claude/hooks/user_prompt_submit.py": "replace-with-sha256",
+  ".claude/hooks/pre_tool_firewall.py": "replace-with-sha256",
+  ".claude/hooks/config_tamper_alert.py": "replace-with-sha256",
+  ".claude/hooks/post_tool_use.py": "replace-with-sha256",
+  ".claude/hooks/stop.py": "replace-with-sha256"
+}

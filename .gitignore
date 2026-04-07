@@ -16,3 +16,11 @@
 /AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/src/prompt_sentinel/core/__pycache__
 /AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/src/prompt_sentinel/scripts/__pycache__
 /AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/tests/__pycache__
+/V1_Prompt_Sentinel/hooks/__pycache__
+/V1_Prompt_Sentinel/prompt-sentinel-core/src/prompt_sentinel/__pycache__
+/V1_Prompt_Sentinel/prompt-sentinel-core/src/prompt_sentinel/adapters/__pycache__
+/V1_Prompt_Sentinel/prompt-sentinel-core/src/prompt_sentinel/cli/__pycache__
+/V1_Prompt_Sentinel/prompt-sentinel-core/src/prompt_sentinel/core/__pycache__
+/V1_Prompt_Sentinel/prompt-sentinel-core/src/prompt_sentinel/scripts/__pycache__
+/V1_Prompt_Sentinel/prompt-sentinel-core/tests/__pycache__
+/V1_Prompt_Sentinel/scripts/__pycache__
