@@ -33,6 +33,8 @@ but keep the actual authorization logic in `prompt-sentinel-core`.
 4. Generate and verify instruction manifests for mutable files like `AGENTS.md`.
 5. Before sensitive actions, run the proposal through the Prompt_Sentinel helper
    or runtime.
+6. Before enabling an MCP server, build and verify an MCP admission manifest from
+   the server's `tools/list` output.
 
 ## What the skill should do
 
@@ -57,6 +59,14 @@ runtime or plugin path that checks proposals independently of the prompt layer.
 - `scripts/check_proposal.py`
 - `scripts/request_capability.py`
 - `scripts/explain_denial.py`
+
+## MCP hardening workflow
+
+1. Capture a server's MCP `tools/list` response to JSON.
+2. Run `prompt-sentinel mcp build-manifest --tools tools.json --server-id <id> --transport <transport> --output <id>.manifest.json`.
+3. Add the approved server, transport, tool names, and schema hashes to policy under `mcp_servers`.
+4. Run `prompt-sentinel mcp verify-manifest --manifest <id>.manifest.json --policy policy.json`.
+5. Treat schema-hash drift, new tools, unsafe STDIO commands, or prompt-like schema text as review events before the agent can use the server.
 
 ## Next implementation steps
 

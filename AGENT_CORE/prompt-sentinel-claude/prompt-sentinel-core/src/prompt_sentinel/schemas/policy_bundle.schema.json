@@ -30,6 +30,9 @@
           "type": "array",
           "items": {"type": "string"}
         },
+        "mcp_servers": {"type": "object"},
+        "mcp_transport": {"type": "object"},
+        "mcp_data_flows": {"type": "object"},
         "sensitive_action_classes": {"type": "object"},
         "meta": {"type": "object"}
       },

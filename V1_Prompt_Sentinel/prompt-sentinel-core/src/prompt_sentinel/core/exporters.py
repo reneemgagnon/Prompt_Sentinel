@@ -16,7 +16,7 @@ import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 
 class ExportBatch:
@@ -185,7 +185,13 @@ def create_exporter(destination: str, **kwargs) -> AuditExporter:
 
     parsed = urlparse(destination)
 
-    if parsed.scheme == "file" or (not parsed.scheme and not parsed.netloc):
+    if parsed.scheme == "file":
+        path = unquote(destination[len("file://") :])
+        if path.startswith("/") and len(path) > 3 and path[2] == ":":
+            path = path.lstrip("/")
+        return FileExporter(Path(path))
+
+    if not parsed.scheme and not parsed.netloc:
         path = parsed.path or destination
         return FileExporter(Path(path))
 

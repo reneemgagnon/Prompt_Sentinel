@@ -8,7 +8,16 @@ from pathlib import Path
 
 from prompt_sentinel.core.exporters import export_audit_log
 from prompt_sentinel.core.policy_vault import PolicyVault
-from prompt_sentinel.core.runtime import evaluate_proposal, issue_capability, load_json
+from prompt_sentinel.core.runtime import (
+    build_mcp_manifest_file,
+    evaluate_proposal,
+    issue_capability,
+    load_json,
+    tail_audit_log,
+    validate_policy_file,
+    verify_capability,
+    verify_mcp_manifest_file,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -27,9 +36,22 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("--public-key", type=Path)
     check.add_argument("--capability", type=Path)
     check.add_argument("--audience", default="local.prompt-sentinel")
+    check.add_argument("--execute", action="store_true", help="Execute through the trusted local registry after authorization")
 
-    summary = subparsers.add_parser("policy-summary", help="Emit the safe summary for a policy")
+    policy = subparsers.add_parser("policy", help="Inspect or validate policy bundles")
+    policy_subparsers = policy.add_subparsers(dest="policy_command", required=True)
+
+    validate = policy_subparsers.add_parser("validate", help="Validate a policy bundle")
+    validate.add_argument("--policy", type=Path, required=True)
+
+    summary = policy_subparsers.add_parser("summary", help="Emit the safe summary for a policy")
     summary.add_argument("--policy", type=Path, required=True)
+
+    policy_validate_alias = subparsers.add_parser("policy-validate", help="Alias for 'policy validate'")
+    policy_validate_alias.add_argument("--policy", type=Path, required=True)
+
+    policy_summary_alias = subparsers.add_parser("policy-summary", help="Alias for 'policy summary'")
+    policy_summary_alias.add_argument("--policy", type=Path, required=True)
 
     issue = subparsers.add_parser("issue-capability", help="Issue a local capability ticket")
     issue.add_argument("--authority", required=True)
@@ -42,11 +64,58 @@ def build_parser() -> argparse.ArgumentParser:
     issue.add_argument("--public-key", type=Path)
     issue.add_argument("--key-id", default="local-dev-key")
 
-    export = subparsers.add_parser("audit-export", help="Export audit log to a sink")
+    verify = subparsers.add_parser("verify-capability", help="Verify a capability ticket against expected params")
+    verify.add_argument("--capability", type=Path, required=True)
+    verify.add_argument("--public-key", type=Path, required=True)
+    verify.add_argument("--params", type=Path, required=True)
+    verify.add_argument("--session-id", required=True)
+    verify.add_argument("--audience", default="local.prompt-sentinel")
+    verify.add_argument("--operation")
+    verify.add_argument("--scope", type=Path)
+
+    mcp = subparsers.add_parser("mcp", help="Inspect and verify MCP server/tool metadata")
+    mcp_subparsers = mcp.add_subparsers(dest="mcp_command", required=True)
+
+    mcp_build = mcp_subparsers.add_parser("build-manifest", help="Build an MCP admission manifest from tools/list output")
+    mcp_build.add_argument("--tools", type=Path, required=True)
+    mcp_build.add_argument("--server-id", required=True)
+    mcp_build.add_argument("--publisher", default="")
+    mcp_build.add_argument("--transport", default="")
+    mcp_build.add_argument("--server-url")
+    mcp_build.add_argument("--command", dest="stdio_command")
+    mcp_build.add_argument("--arg", action="append", default=[])
+    mcp_build.add_argument("--output", type=Path)
+
+    mcp_verify = mcp_subparsers.add_parser("verify-manifest", help="Verify an MCP admission manifest against policy")
+    mcp_verify.add_argument("--manifest", type=Path, required=True)
+    mcp_verify.add_argument("--policy", type=Path, required=True)
+
+    audit = subparsers.add_parser("audit", help="Inspect or export audit logs")
+    audit_subparsers = audit.add_subparsers(dest="audit_command", required=True)
+
+    tail = audit_subparsers.add_parser("tail", help="Show the latest audit entries")
+    tail.add_argument("--audit-log", type=Path, default=Path("prompt_sentinel.audit.jsonl"))
+    tail.add_argument("--limit", type=int, default=20)
+    tail.add_argument("--event")
+    tail.add_argument("--tool")
+
+    export = audit_subparsers.add_parser("export", help="Export audit log to a sink")
     export.add_argument("--audit-log", type=Path, default=Path("prompt_sentinel.audit.jsonl"))
     export.add_argument("--destination", required=True, help="Export URI: file://, https://, s3://, or stdout")
     export.add_argument("--after", type=int, default=None, help="Only export entries after this Unix timestamp")
     export.add_argument("--header", action="append", default=[], help="HTTP header as Key:Value (for webhook)")
+
+    audit_tail_alias = subparsers.add_parser("audit-tail", help="Alias for 'audit tail'")
+    audit_tail_alias.add_argument("--audit-log", type=Path, default=Path("prompt_sentinel.audit.jsonl"))
+    audit_tail_alias.add_argument("--limit", type=int, default=20)
+    audit_tail_alias.add_argument("--event")
+    audit_tail_alias.add_argument("--tool")
+
+    audit_export_alias = subparsers.add_parser("audit-export", help="Alias for 'audit export'")
+    audit_export_alias.add_argument("--audit-log", type=Path, default=Path("prompt_sentinel.audit.jsonl"))
+    audit_export_alias.add_argument("--destination", required=True, help="Export URI: file://, https://, s3://, or stdout")
+    audit_export_alias.add_argument("--after", type=int, default=None, help="Only export entries after this Unix timestamp")
+    audit_export_alias.add_argument("--header", action="append", default=[], help="HTTP header as Key:Value (for webhook)")
 
     return parser
 
@@ -65,6 +134,7 @@ def cmd_check_proposal(args: argparse.Namespace) -> int:
         public_key_path=args.public_key,
         expected_audience=args.audience,
         capability_path=args.capability,
+        execute=args.execute,
     )
     print(json.dumps(decision.__dict__, indent=2, ensure_ascii=False))
     return 0 if decision.allowed else 2
@@ -74,6 +144,12 @@ def cmd_policy_summary(args: argparse.Namespace) -> int:
     policy = load_json(args.policy)
     print(json.dumps(PolicyVault.safe_summary(policy), indent=2, ensure_ascii=False))
     return 0
+
+
+def cmd_policy_validate(args: argparse.Namespace) -> int:
+    result = validate_policy_file(args.policy)
+    print(json.dumps(result.as_dict(), indent=2, ensure_ascii=False))
+    return 0 if result.ok else 2
 
 
 def cmd_issue_capability(args: argparse.Namespace) -> int:
@@ -91,6 +167,55 @@ def cmd_issue_capability(args: argparse.Namespace) -> int:
         key_id=args.key_id,
     )
     print(json.dumps(ticket.__dict__, indent=2, ensure_ascii=False))
+    return 0
+
+
+def cmd_verify_capability(args: argparse.Namespace) -> int:
+    result = verify_capability(
+        capability_path=args.capability,
+        public_key_path=args.public_key,
+        expected_params_path=args.params,
+        expected_session_id=args.session_id,
+        expected_audience=args.audience,
+        expected_operation=args.operation,
+        expected_scope_path=args.scope,
+    )
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0 if result["ok"] else 2
+
+
+def cmd_mcp_build_manifest(args: argparse.Namespace) -> int:
+    manifest = build_mcp_manifest_file(
+        tools_path=args.tools,
+        server_id=args.server_id,
+        publisher=args.publisher,
+        transport=args.transport,
+        server_url=args.server_url,
+        command=args.stdio_command,
+        args=args.arg,
+    )
+    output = json.dumps(manifest, indent=2, ensure_ascii=False)
+    if args.output:
+        args.output.write_text(output + "\n", encoding="utf-8")
+    else:
+        print(output)
+    return 0
+
+
+def cmd_mcp_verify_manifest(args: argparse.Namespace) -> int:
+    result = verify_mcp_manifest_file(manifest_path=args.manifest, policy_path=args.policy)
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0 if result["ok"] else 2
+
+
+def cmd_audit_tail(args: argparse.Namespace) -> int:
+    records = tail_audit_log(
+        args.audit_log,
+        limit=args.limit,
+        event=args.event,
+        tool=args.tool,
+    )
+    print(json.dumps({"count": len(records), "records": records}, indent=2, ensure_ascii=False))
     return 0
 
 
@@ -117,10 +242,31 @@ def main() -> int:
     args = parser.parse_args()
     if args.command == "check-proposal":
         return cmd_check_proposal(args)
+    if args.command == "policy":
+        if args.policy_command == "validate":
+            return cmd_policy_validate(args)
+        if args.policy_command == "summary":
+            return cmd_policy_summary(args)
+    if args.command == "policy-validate":
+        return cmd_policy_validate(args)
     if args.command == "policy-summary":
         return cmd_policy_summary(args)
     if args.command == "issue-capability":
         return cmd_issue_capability(args)
+    if args.command == "verify-capability":
+        return cmd_verify_capability(args)
+    if args.command == "mcp":
+        if args.mcp_command == "build-manifest":
+            return cmd_mcp_build_manifest(args)
+        if args.mcp_command == "verify-manifest":
+            return cmd_mcp_verify_manifest(args)
+    if args.command == "audit":
+        if args.audit_command == "tail":
+            return cmd_audit_tail(args)
+        if args.audit_command == "export":
+            return cmd_audit_export(args)
+    if args.command == "audit-tail":
+        return cmd_audit_tail(args)
     if args.command == "audit-export":
         return cmd_audit_export(args)
     parser.error(f"unknown command: {args.command}")

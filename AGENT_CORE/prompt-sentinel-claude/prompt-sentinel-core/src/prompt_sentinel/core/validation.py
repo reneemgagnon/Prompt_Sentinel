@@ -86,6 +86,10 @@ def validate_policy(policy: Dict[str, Any]) -> ValidationResult:
         if approval_scope is not None and not isinstance(approval_scope, str):
             errors.append(_issue("error", f"{tool_path}.approval_scope", "approval_scope must be a string"))
 
+        approval_operation = rules.get("approval_operation")
+        if approval_operation is not None and (not isinstance(approval_operation, str) or not approval_operation.strip()):
+            errors.append(_issue("error", f"{tool_path}.approval_operation", "approval_operation must be a non-empty string"))
+
     capability_required = policy.get("capability_required_tools", [])
     if capability_required is not None:
         if not isinstance(capability_required, list) or not all(isinstance(item, str) and item.strip() for item in capability_required):
@@ -112,5 +116,63 @@ def validate_policy(policy: Dict[str, Any]) -> ValidationResult:
         classes = policy["sensitive_action_classes"]
         if not isinstance(classes, dict):
             errors.append(_issue("error", "sensitive_action_classes", "sensitive_action_classes must be an object"))
+
+    mcp_servers = policy.get("mcp_servers")
+    if mcp_servers is not None:
+        if not isinstance(mcp_servers, dict):
+            errors.append(_issue("error", "mcp_servers", "mcp_servers must be an object"))
+        else:
+            for server_id, server_rules in mcp_servers.items():
+                server_path = f"mcp_servers.{server_id}"
+                if not isinstance(server_id, str) or not server_id.strip():
+                    errors.append(_issue("error", server_path, "MCP server id must be a non-empty string"))
+                    continue
+                if not isinstance(server_rules, dict):
+                    errors.append(_issue("error", server_path, "MCP server rules must be an object"))
+                    continue
+                transport = server_rules.get("transport")
+                if transport is not None and str(transport) not in {"stdio", "http", "streamable-http", "sse"}:
+                    errors.append(_issue("error", f"{server_path}.transport", "unsupported MCP transport"))
+                trust_tier = server_rules.get("trust_tier")
+                if trust_tier is not None and (not isinstance(trust_tier, str) or not trust_tier.strip()):
+                    errors.append(_issue("error", f"{server_path}.trust_tier", "trust_tier must be a non-empty string"))
+                tools = server_rules.get("tools")
+                if not isinstance(tools, dict) or not tools:
+                    errors.append(_issue("error", f"{server_path}.tools", "approved MCP servers must pin at least one tool"))
+                    continue
+                for tool_id, tool_rules in tools.items():
+                    mcp_tool_path = f"{server_path}.tools.{tool_id}"
+                    if not isinstance(tool_id, str) or not tool_id.strip():
+                        errors.append(_issue("error", mcp_tool_path, "MCP tool name must be a non-empty string"))
+                        continue
+                    if not isinstance(tool_rules, dict):
+                        errors.append(_issue("error", mcp_tool_path, "MCP tool rules must be an object"))
+                        continue
+                    schema_hash = tool_rules.get("schema_hash")
+                    if schema_hash is not None and (not isinstance(schema_hash, str) or len(schema_hash) != 64):
+                        errors.append(_issue("error", f"{mcp_tool_path}.schema_hash", "schema_hash must be a 64-character hex string"))
+                    elif schema_hash is None and not server_rules.get("allow_unpinned_tools", False):
+                        warnings.append(_issue("warning", f"{mcp_tool_path}.schema_hash", "MCP tool is approved without a schema pin"))
+                    allowed_params = tool_rules.get("allowed_params")
+                    if allowed_params is not None:
+                        if not isinstance(allowed_params, list) or not all(isinstance(item, str) and item.strip() for item in allowed_params):
+                            errors.append(_issue("error", f"{mcp_tool_path}.allowed_params", "allowed_params must be a list of non-empty strings"))
+                    approval_operation = tool_rules.get("approval_operation")
+                    if approval_operation is not None and (not isinstance(approval_operation, str) or not approval_operation.strip()):
+                        errors.append(_issue("error", f"{mcp_tool_path}.approval_operation", "approval_operation must be a non-empty string"))
+
+    flows = policy.get("mcp_data_flows")
+    if flows is not None:
+        if not isinstance(flows, dict):
+            errors.append(_issue("error", "mcp_data_flows", "mcp_data_flows must be an object"))
+        else:
+            for flow_key in ("allowed", "blocked"):
+                edges = flows.get(flow_key, [])
+                if not isinstance(edges, list):
+                    errors.append(_issue("error", f"mcp_data_flows.{flow_key}", "flow edges must be a list"))
+                    continue
+                for index, edge in enumerate(edges):
+                    if not isinstance(edge, dict) or not isinstance(edge.get("from"), str) or not isinstance(edge.get("to"), str):
+                        errors.append(_issue("error", f"mcp_data_flows.{flow_key}[{index}]", "flow edge must contain string from/to values"))
 
     return ValidationResult(ok=not errors, errors=errors, warnings=warnings)

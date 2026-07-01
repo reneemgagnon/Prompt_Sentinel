@@ -59,13 +59,32 @@ def test_path_whitelist_allows():
 def test_path_whitelist_blocks():
     ok, reason = _enforcer().check_tool_call(session=SESSION, tool="file_read", params={"path": "/etc/passwd"})
     assert ok is False
-    assert "not allowlisted" in reason
+    assert "base_dir" in reason or "allowlisted" in reason
 
 
 def test_path_whitelist_missing_path():
     ok, reason = _enforcer().check_tool_call(session=SESSION, tool="file_read", params={})
     assert ok is False
     assert "missing" in reason
+
+
+def test_path_whitelist_blocks_traversal_after_normalization(tmp_path):
+    policy = {
+        "tool_permissions": {
+            "file_read": {
+                "allowed_params": ["path"],
+                "path_whitelist": ["workspace/*"],
+            }
+        }
+    }
+    enforcer = PolicyEnforcer(policy, base_dir=tmp_path)
+    ok, reason = enforcer.check_tool_call(
+        session=SESSION,
+        tool="file_read",
+        params={"path": "workspace/../secrets.txt"},
+    )
+    assert ok is False
+    assert "allowlisted" in reason
 
 
 # ── Call quotas ─────────────────────────────────────────────────────
@@ -105,3 +124,9 @@ def test_capability_required_by_path_heuristic():
     required, reason = _enforcer().capability_required(tool="file_read", params={"path": "data/secret_keys.txt"})
     assert required is True
     assert "sensitive path" in reason
+
+
+def test_capability_context_binds_tool_scope():
+    context = _enforcer().capability_context(tool="sensitive_export")
+    assert context["operation"] == "approve_tool_call"
+    assert context["scope"]["tool"] == "sensitive_export"

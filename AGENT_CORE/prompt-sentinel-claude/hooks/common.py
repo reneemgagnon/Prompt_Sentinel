@@ -63,6 +63,7 @@ def resolve_policy_path() -> Path:
 def normalize_tool_proposal(event: Dict[str, Any]) -> Dict[str, Any]:
     tool_name = str(event.get("tool_name", ""))
     tool_input = event.get("tool_input") or {}
+    metadata = event.get("metadata") or event.get("tool_metadata") or {}
     if isinstance(tool_input, dict):
         params = dict(tool_input)
     else:
@@ -72,7 +73,7 @@ def normalize_tool_proposal(event: Dict[str, Any]) -> Dict[str, Any]:
             if key in params:
                 params["command"] = params[key]
                 break
-    return {"tool": tool_name, "params": params}
+    return {"tool": tool_name, "params": params, "metadata": metadata if isinstance(metadata, dict) else {}}
 
 
 def verify_manifest_if_present() -> Dict[str, Dict[str, str]]:
@@ -92,4 +93,5 @@ def evaluate_hook_proposal(event: Dict[str, Any]):
         user_id="claude-user",
         role="agent",
         tenant="local",
+        execute=False,
     )

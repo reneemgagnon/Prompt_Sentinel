@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PromptSentinelAuditExportRecord",
+  "type": "object",
+  "required": [
+    "event",
+    "timestamp",
+    "tool",
+    "policy_result",
+    "capability_status",
+    "params_hash",
+    "retention_class",
+    "policy_name"
+  ],
+  "properties": {
+    "event": {"type": "string"},
+    "timestamp": {"type": "integer"},
+    "tool": {"type": "string"},
+    "session_id": {"type": ["string", "null"]},
+    "user_id": {"type": ["string", "null"]},
+    "policy_result": {"type": "string"},
+    "capability_status": {"type": "string"},
+    "params_hash": {"type": "string"},
+    "retention_class": {"type": "string"},
+    "sensitive_action_class": {"type": "string"},
+    "policy_name": {"type": "string"},
+    "prev_hash": {"type": "string"},
+    "entry_hash": {"type": "string"}
+  },
+  "additionalProperties": true
+}

@@ -11,13 +11,14 @@ from .audit import AuditChain
 from .boundary_app import BoundaryApp
 from .capability import CapabilityService, DEFAULT_AUDIENCE
 from .enforcer import PolicyEnforcer
+from .mcp import build_mcp_admission_manifest, verify_mcp_manifest_against_policy
 from .models import CapabilityTicket, SessionFacts, ToolProposal
 from .tool_registry import ToolRegistry
 from .validation import ValidationResult, validate_policy
 
 
 def load_json(path: Path) -> Dict[str, Any]:
-    return json.loads(Path(path).read_text(encoding="utf-8"))
+    return json.loads(Path(path).read_text(encoding="utf-8-sig"))
 
 
 def resolve_default_policy_path() -> Path:
@@ -67,7 +68,7 @@ def build_boundary_app(
     expected_audience: str = DEFAULT_AUDIENCE,
 ) -> BoundaryApp:
     policy = load_json(policy_path or resolve_default_policy_path())
-    enforcer = PolicyEnforcer(policy)
+    enforcer = PolicyEnforcer(policy, base_dir=base_dir)
     tools = ToolRegistry(base_dir=base_dir)
     audit = AuditChain(audit_log_path)
     capability_service = None
@@ -94,6 +95,7 @@ def evaluate_proposal(
     public_key_path: Optional[Path] = None,
     expected_audience: str = DEFAULT_AUDIENCE,
     capability_path: Optional[Path] = None,
+    execute: bool = True,
 ):
     app = build_boundary_app(
         policy_path=policy_path,
@@ -102,7 +104,11 @@ def evaluate_proposal(
         public_key_path=public_key_path,
         expected_audience=expected_audience,
     )
-    proposal = ToolProposal(tool=proposal_data["tool"], params=proposal_data.get("params", {}))
+    proposal = ToolProposal(
+        tool=proposal_data["tool"],
+        params=proposal_data.get("params", {}),
+        metadata=proposal_data.get("metadata", {}),
+    )
     session = SessionFacts(
         session_id=session_id or secrets.token_urlsafe(12),
         user_id=user_id,
@@ -112,7 +118,7 @@ def evaluate_proposal(
     capability = None
     if capability_path and Path(capability_path).exists():
         capability = CapabilityTicket(**load_json(Path(capability_path)))
-    return app.handle(session=session, proposal=proposal, capability=capability)
+    return app.handle(session=session, proposal=proposal, capability=capability, execute=execute)
 
 
 def verify_capability(
@@ -122,6 +128,8 @@ def verify_capability(
     expected_params_path: Path,
     expected_session_id: str,
     expected_audience: str = DEFAULT_AUDIENCE,
+    expected_operation: Optional[str] = None,
+    expected_scope_path: Optional[Path] = None,
 ) -> Dict[str, Any]:
     ticket = CapabilityTicket(**load_json(capability_path))
     service = load_capability_service(
@@ -129,10 +137,13 @@ def verify_capability(
         expected_audience=expected_audience,
     )
     expected_params = load_json(expected_params_path)
+    expected_scope = load_json(expected_scope_path) if expected_scope_path else None
     ok, reason = service.verify(
         ticket,
         expected_session_id=expected_session_id,
         expected_params=expected_params,
+        expected_operation=expected_operation,
+        expected_scope=expected_scope,
     )
     return {
         "ok": ok,
@@ -141,6 +152,31 @@ def verify_capability(
         "authority": ticket.authority,
         "operation": ticket.operation,
     }
+
+
+def build_mcp_manifest_file(
+    *,
+    tools_path: Path,
+    server_id: str,
+    publisher: str = "",
+    transport: str = "",
+    server_url: Optional[str] = None,
+    command: Optional[str] = None,
+    args: Optional[List[str]] = None,
+) -> Dict[str, Any]:
+    return build_mcp_admission_manifest(
+        load_json(tools_path),
+        server_id=server_id,
+        publisher=publisher,
+        transport=transport,
+        server_url=server_url,
+        command=command,
+        args=args or [],
+    )
+
+
+def verify_mcp_manifest_file(*, manifest_path: Path, policy_path: Path) -> Dict[str, Any]:
+    return verify_mcp_manifest_against_policy(load_json(manifest_path), load_json(policy_path))
 
 
 def validate_policy_file(policy_path: Path) -> ValidationResult:

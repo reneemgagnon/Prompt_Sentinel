@@ -19,4 +19,4 @@ prompt-sentinel = "prompt_sentinel.cli.main:main"
 package-dir = {"" = "src"}
 
 [tool.setuptools.package-data]
-prompt_sentinel = ["policies/*.json"]
+prompt_sentinel = ["policies/*.json", "schemas/*.json"]

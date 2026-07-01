@@ -157,6 +157,8 @@ class CapabilityService:
         *,
         expected_session_id: str,
         expected_params: Dict[str, Any],
+        expected_operation: Optional[str] = None,
+        expected_scope: Optional[Dict[str, Any]] = None,
         now: Optional[int] = None,
     ) -> Tuple[bool, str]:
         if self.public_key is None:
@@ -172,6 +174,12 @@ class CapabilityService:
             return False, "replay detected"
         if ticket.session_id != expected_session_id:
             return False, "wrong session"
+        if expected_operation is not None and ticket.operation != expected_operation:
+            return False, "wrong operation"
+        if expected_scope is not None:
+            for key, expected_value in expected_scope.items():
+                if ticket.scope.get(key) != expected_value:
+                    return False, "scope mismatch"
         if not self._has_permission(ticket.authority, ticket.operation):
             return False, "authority not permitted"
         if ticket.params_hash_b64 != self.params_hash(expected_params):

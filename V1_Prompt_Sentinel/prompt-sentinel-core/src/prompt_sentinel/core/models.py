@@ -10,6 +10,7 @@ from typing import Any, Dict, Optional
 class ToolProposal:
     tool: str
     params: Dict[str, Any]
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)

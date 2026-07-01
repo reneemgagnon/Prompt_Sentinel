@@ -83,6 +83,32 @@ def test_param_mismatch():
     assert "parameter hash" in reason
 
 
+def test_wrong_operation():
+    svc = _make_service()
+    ticket = _issue(svc, operation="approve_tool_call")
+    ok, reason = svc.verify(
+        ticket,
+        expected_session_id="sess-1",
+        expected_params={"message": "hi"},
+        expected_operation="approve_sensitive_export",
+    )
+    assert ok is False
+    assert "operation" in reason
+
+
+def test_scope_mismatch():
+    svc = _make_service()
+    ticket = _issue(svc, scope={"tool": "echo"})
+    ok, reason = svc.verify(
+        ticket,
+        expected_session_id="sess-1",
+        expected_params={"message": "hi"},
+        expected_scope={"tool": "sensitive_export"},
+    )
+    assert ok is False
+    assert "scope" in reason
+
+
 # ── Authority permissions ────────────────────────────────────────────
 def test_unauthorized_authority():
     svc = _make_service()

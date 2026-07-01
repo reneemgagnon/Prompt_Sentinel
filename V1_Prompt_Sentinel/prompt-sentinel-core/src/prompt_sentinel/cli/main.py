@@ -9,12 +9,14 @@ from pathlib import Path
 from prompt_sentinel.core.exporters import export_audit_log
 from prompt_sentinel.core.policy_vault import PolicyVault
 from prompt_sentinel.core.runtime import (
+    build_mcp_manifest_file,
     evaluate_proposal,
     issue_capability,
     load_json,
     tail_audit_log,
     validate_policy_file,
     verify_capability,
+    verify_mcp_manifest_file,
 )
 
 
@@ -34,6 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("--public-key", type=Path)
     check.add_argument("--capability", type=Path)
     check.add_argument("--audience", default="local.prompt-sentinel")
+    check.add_argument("--execute", action="store_true", help="Execute through the trusted local registry after authorization")
 
     policy = subparsers.add_parser("policy", help="Inspect or validate policy bundles")
     policy_subparsers = policy.add_subparsers(dest="policy_command", required=True)
@@ -67,6 +70,25 @@ def build_parser() -> argparse.ArgumentParser:
     verify.add_argument("--params", type=Path, required=True)
     verify.add_argument("--session-id", required=True)
     verify.add_argument("--audience", default="local.prompt-sentinel")
+    verify.add_argument("--operation")
+    verify.add_argument("--scope", type=Path)
+
+    mcp = subparsers.add_parser("mcp", help="Inspect and verify MCP server/tool metadata")
+    mcp_subparsers = mcp.add_subparsers(dest="mcp_command", required=True)
+
+    mcp_build = mcp_subparsers.add_parser("build-manifest", help="Build an MCP admission manifest from tools/list output")
+    mcp_build.add_argument("--tools", type=Path, required=True)
+    mcp_build.add_argument("--server-id", required=True)
+    mcp_build.add_argument("--publisher", default="")
+    mcp_build.add_argument("--transport", default="")
+    mcp_build.add_argument("--server-url")
+    mcp_build.add_argument("--command", dest="stdio_command")
+    mcp_build.add_argument("--arg", action="append", default=[])
+    mcp_build.add_argument("--output", type=Path)
+
+    mcp_verify = mcp_subparsers.add_parser("verify-manifest", help="Verify an MCP admission manifest against policy")
+    mcp_verify.add_argument("--manifest", type=Path, required=True)
+    mcp_verify.add_argument("--policy", type=Path, required=True)
 
     audit = subparsers.add_parser("audit", help="Inspect or export audit logs")
     audit_subparsers = audit.add_subparsers(dest="audit_command", required=True)
@@ -112,6 +134,7 @@ def cmd_check_proposal(args: argparse.Namespace) -> int:
         public_key_path=args.public_key,
         expected_audience=args.audience,
         capability_path=args.capability,
+        execute=args.execute,
     )
     print(json.dumps(decision.__dict__, indent=2, ensure_ascii=False))
     return 0 if decision.allowed else 2
@@ -154,7 +177,33 @@ def cmd_verify_capability(args: argparse.Namespace) -> int:
         expected_params_path=args.params,
         expected_session_id=args.session_id,
         expected_audience=args.audience,
+        expected_operation=args.operation,
+        expected_scope_path=args.scope,
     )
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0 if result["ok"] else 2
+
+
+def cmd_mcp_build_manifest(args: argparse.Namespace) -> int:
+    manifest = build_mcp_manifest_file(
+        tools_path=args.tools,
+        server_id=args.server_id,
+        publisher=args.publisher,
+        transport=args.transport,
+        server_url=args.server_url,
+        command=args.stdio_command,
+        args=args.arg,
+    )
+    output = json.dumps(manifest, indent=2, ensure_ascii=False)
+    if args.output:
+        args.output.write_text(output + "\n", encoding="utf-8")
+    else:
+        print(output)
+    return 0
+
+
+def cmd_mcp_verify_manifest(args: argparse.Namespace) -> int:
+    result = verify_mcp_manifest_file(manifest_path=args.manifest, policy_path=args.policy)
     print(json.dumps(result, indent=2, ensure_ascii=False))
     return 0 if result["ok"] else 2
 
@@ -206,6 +255,11 @@ def main() -> int:
         return cmd_issue_capability(args)
     if args.command == "verify-capability":
         return cmd_verify_capability(args)
+    if args.command == "mcp":
+        if args.mcp_command == "build-manifest":
+            return cmd_mcp_build_manifest(args)
+        if args.mcp_command == "verify-manifest":
+            return cmd_mcp_verify_manifest(args)
     if args.command == "audit":
         if args.audit_command == "tail":
             return cmd_audit_tail(args)

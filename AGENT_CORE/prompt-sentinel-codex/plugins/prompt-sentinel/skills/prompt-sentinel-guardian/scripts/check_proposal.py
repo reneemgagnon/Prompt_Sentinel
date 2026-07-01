@@ -29,6 +29,7 @@ def main() -> int:
         audit_log_path=Path.cwd() / "prompt-sentinel.codex.audit.jsonl",
         base_dir=Path.cwd(),
         user_id="codex-user",
+        execute=False,
     )
     print(json.dumps(decision.__dict__, indent=2, ensure_ascii=False))
     return 0 if decision.allowed else 2

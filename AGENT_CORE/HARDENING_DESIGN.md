@@ -13,6 +13,7 @@ Trusted launch means the firewall starts before privileged agent work.
 3. Verify instruction-manifest hashes for mutable guidance files.
 4. Start the agent session.
 5. Enforce pre-tool checks on sensitive actions.
+6. Admit MCP servers and tool schemas only after provenance, transport, and schema-hash checks.
 
 ## Why mutable instruction files are not enough
 
@@ -33,6 +34,8 @@ trust because they are mutable text. Prompt_Sentinel should therefore:
    sealed policy bundles and signed capabilities
 4. Observability layer
    audit chain, alerts, threat vectors
+5. MCP admission layer
+   server allowlists, full-schema hash pins, STDIO launcher policy, cross-server data-flow controls
 
 ## Current scaffold mapping
 
@@ -40,6 +43,8 @@ trust because they are mutable text. Prompt_Sentinel should therefore:
 - Codex helper scripts call the core runtime directly
 - Claude hooks call the core runtime directly
 - trusted launch checks manifest integrity when `.claude/prompt-sentinel.manifest.json` exists
+- MCP admission manifests hash full tool descriptors and are verified against policy pins
+- MCP calls can be authorized without local execution so hooks can guard host-managed tools
 - alerts and threat-vector schemas live in `prompt-sentinel-control-plane`
 
 ## Safe federation loop

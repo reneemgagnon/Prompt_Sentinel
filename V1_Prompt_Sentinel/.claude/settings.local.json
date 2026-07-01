@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -E \"\\(^[^/]*$|^[^/]*/[^/]*$\\)\")"
+      "Bash(grep -E \"\\(^[^/]*$|^[^/]*/[^/]*$\\)\")",
+      "Bash(cat references/*.md)",
+      "Bash(xargs cat:*)"
     ]
   }
 }

@@ -25,10 +25,20 @@
       "max_calls_per_session": 5,
       "retention_class": "compliance-hold",
       "sensitive_action_class": "approval-gated",
-      "approval_scope": "data-export"
+      "approval_scope": "data-export",
+      "approval_operation": "approve_sensitive_export"
     }
   },
   "capability_required_tools": ["sensitive_export"],
+  "mcp_transport": {
+    "stdio": {
+      "allowed_commands": ["python", "python3", "node", "npx", "uvx"]
+    }
+  },
+  "mcp_data_flows": {
+    "allowed": [],
+    "blocked": []
+  },
   "sensitive_action_classes": {
     "standard": {
       "description": "Routine developer actions"

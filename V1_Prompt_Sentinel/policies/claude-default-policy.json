@@ -14,6 +14,15 @@
     }
   },
   "capability_required_tools": [],
+  "mcp_transport": {
+    "stdio": {
+      "allowed_commands": ["python", "python3", "node", "npx", "uvx"]
+    }
+  },
+  "mcp_data_flows": {
+    "allowed": [],
+    "blocked": []
+  },
   "meta": {
     "policy_name": "claude-default",
     "notes": "Starter Claude Code policy for Prompt_Sentinel hooks"
