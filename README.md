@@ -1,62 +1,199 @@
-# Prompt_Sentinel
+<div align="center">
 
-Prompt_Sentinel is a trusted action boundary for coding agents.
+# 🛡️ Prompt_Sentinel
 
-Instead of asking an LLM to protect itself, Prompt_Sentinel keeps policy,
-approval, and audit decisions in trusted host-side code. The model can propose
-actions; the runtime decides what is authorized, what needs a capability ticket,
-what should be audited, and what must be denied.
+### A trusted action boundary for coding agents
 
-## Why It Exists
+Prompt_Sentinel keeps **policy, approval, capability tickets, MCP admission, and audit decisions** in trusted host-side code — where the model can propose actions, but the runtime decides what is authorized.
 
-Coding agents now act across files, shells, browsers, plugins, and MCP servers.
-That creates a boundary problem: untrusted text can shape trusted actions.
+<br/>
+
+![Status](https://img.shields.io/badge/status-core_runtime-blue)
+![Boundary](https://img.shields.io/badge/boundary-host_enforced-success)
+![MCP](https://img.shields.io/badge/MCP-admission_%2B_pinning-purple)
+![Capabilities](https://img.shields.io/badge/capabilities-signed_tickets-orange)
+![Audit](https://img.shields.io/badge/audit-hash_chained-informational)
+![Adapters](https://img.shields.io/badge/adapters-Claude_%2B_Codex-black)
+
+<br/>
+
+> **The rule:** a model-generated tool call is a proposal, not an authorization.
+
+</div>
+
+---
+
+## Contents
+
+- [Why it exists](#why-it-exists)
+- [How it works](#how-it-works)
+- [Product shape](#product-shape)
+- [Architecture](#architecture)
+- [Install](#install)
+- [Fast start](#fast-start)
+- [CLI surface](#cli-surface)
+- [MCP poisoning hardening](#mcp-poisoning-hardening)
+- [Policy packs](#policy-packs)
+- [Runtime guarantees](#runtime-guarantees)
+- [Hooks and adapters](#hooks-and-adapters)
+- [Repository map](#repository-map)
+- [Schemas](#schemas)
+- [Development](#development)
+- [Current security posture](#current-security-posture)
+
+---
+
+## Why it exists
+
+Coding agents now act across files, shells, browsers, plugins, and MCP servers. That creates a boundary problem:
+
+> **Untrusted text can shape trusted actions.**
+
+A repository file, tool response, retrieved web page, MCP descriptor, or user message can all contain instructions. Prompt_Sentinel treats those inputs as **untrusted influence**, not authority.
+
+Instead of asking an LLM to protect itself, Prompt_Sentinel separates the system into explicit trust zones.
+
+```mermaid
+flowchart LR
+    A[Untrusted text<br/>user input · repo files · tool output · MCP metadata] --> B[Model proposes<br/>a tool call]
+    B --> C{Prompt_Sentinel<br/>trusted runtime}
+    C -->|Allowed| D[Trusted execution]
+    C -->|Needs approval| E[Signed capability ticket]
+    C -->|Denied| F[Explicit denial]
+    D --> G[(Hash-chained audit log)]
+    E --> G
+    F --> G
+```
 
 Prompt_Sentinel separates:
 
-- untrusted user, repository, retrieved, and tool-output text
-- model-generated tool proposals
-- host-side authorization
-- trusted execution
-- audit and alerting
+| Boundary | What lives there | Trust level |
+|---|---|---:|
+| **Input surface** | User text, repo text, retrievals, tool output, MCP descriptors | Untrusted |
+| **Model layer** | Tool-call proposals, reasoning, suggested actions | Proposal only |
+| **Runtime layer** | Policy checks, capability verification, MCP pinning, quotas | Trusted |
+| **Execution layer** | Shell, files, browser, plugins, MCP calls | Authorized only |
+| **Audit layer** | Tool decisions, denials, approvals, exports | Evidence trail |
 
-The important rule is simple: a model-generated tool call is a proposal, not an
-authorization.
+---
 
-## Product Shape
+## How it works
 
-Prompt_Sentinel is organized around three layers:
+Prompt_Sentinel acts as a policy engine between the agent and the tools it wants to use.
 
-- Core: local runtime, CLI, sealed policy handling, signed capability flow,
-  local audit chain, and Codex/Claude adapters.
-- Guard Add-On: managed policy packs, approval workflows, better denial UX,
-  hosted audit search, and team presets.
-- Enterprise: centralized policy distribution, approval services, SSO/RBAC,
-  SIEM export, KMS/HSM integration, and long-retention compliance reporting.
+```mermaid
+sequenceDiagram
+    participant U as User / Repo / Tool Output
+    participant M as Coding Agent
+    participant P as Prompt_Sentinel Runtime
+    participant H as Host Executor
+    participant A as Audit Chain
 
-This repo implements the Core runtime directly and includes Guard and Enterprise
-scaffolding under `AGENT_CORE/`.
+    U->>M: Untrusted instructions or context
+    M->>P: Proposed tool call + params
+    P->>P: Validate policy, scope, quotas, MCP metadata
+    alt Allowed
+        P->>H: Authorize execution
+        H->>A: Record decision + result metadata
+    else Needs capability
+        P->>M: Require signed ticket
+        M->>P: Present capability ticket
+        P->>P: Verify audience, expiry, nonce, scope, params
+        P->>H: Authorize execution
+        H->>A: Record approval path
+    else Denied
+        P->>A: Record denial
+        P->>M: Return explicit denial
+    end
+```
 
-## Repository Map
+The model can still reason, plan, and propose. It just cannot silently convert a proposal into an action.
 
-- `AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/`: authoritative
-  installable runtime and CLI used by the root package.
-- `AGENT_CORE/prompt-sentinel-codex/`: Codex plugin and skill distribution
-  layer.
-- `AGENT_CORE/prompt-sentinel-control-plane/`: enterprise control-plane
-  skeleton and schemas.
-- `AGENT_CORE/prompt-sentinel-core/`: standalone runtime copy kept in sync for
-  packaging/distribution work.
-- `V1_Prompt_Sentinel/prompt-sentinel-core/`: V1 package copy kept in sync for
-  compatibility.
-- `V3_LLM_Boundary_Crypto_end_to_end.py`: original end-to-end prototype kept as
-  a runnable reference.
-- `deployment_guide.md`: framework integration examples for LangChain,
-  LlamaIndex, and FastAPI.
+---
+
+## Product shape
+
+Prompt_Sentinel is organized around three layers.
+
+| Layer | Role | Included here |
+|---|---|---:|
+| **Core** | Local runtime, CLI, sealed policy handling, signed capability flow, local audit chain, Codex and Claude adapters | ✅ Implemented |
+| **Guard Add-On** | Managed policy packs, approval workflows, improved denial UX, hosted audit search, team presets | 🧩 Scaffolding |
+| **Enterprise** | Central policy distribution, approval services, SSO/RBAC, SIEM export, KMS/HSM integration, long-retention compliance reporting | 🧩 Scaffolding |
+
+This repository implements the **Core runtime** directly and includes Guard and Enterprise scaffolding under `AGENT_CORE/`.
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TB
+    subgraph Agent_Host[Agent host]
+        CA[Claude adapter]
+        CX[Codex adapter]
+        MCP[MCP client metadata]
+    end
+
+    subgraph Core[Prompt_Sentinel Core]
+        PE[Policy engine]
+        CV[Capability verifier]
+        MA[MCP admission verifier]
+        RQ[Runtime quotas]
+        AO[Audit output]
+    end
+
+    subgraph Trusted_State[Trusted state outside model context]
+        SP[Sealed policy]
+        PK[Public keys]
+        MP[MCP manifests + schema hashes]
+        AL[(Audit chain)]
+    end
+
+    subgraph Tools[Authorized execution targets]
+        SH[Shell / Bash]
+        FS[Files]
+        BR[Browser]
+        PL[Plugins]
+        MT[MCP tools]
+    end
+
+    CA --> PE
+    CX --> PE
+    MCP --> MA
+    SP --> PE
+    PK --> CV
+    MP --> MA
+    PE --> CV
+    PE --> RQ
+    PE --> AO
+    CV --> AO
+    MA --> AO
+    AO --> AL
+    PE -->|allow / deny / require capability| Tools
+```
+
+### Decision lifecycle
+
+```mermaid
+flowchart LR
+    P[Proposal] --> S[Schema + parameter check]
+    S --> Q[Quota + path controls]
+    Q --> M[MCP server/tool pin check]
+    M --> C{Capability required?}
+    C -->|No| X[Authorize]
+    C -->|Yes| V[Verify signed ticket]
+    V --> X
+    C -->|Invalid / absent| D[Deny]
+    X --> A[Audit]
+    D --> A
+```
+
+---
 
 ## Install
 
-From the repo root:
+From the repository root:
 
 ```bash
 pip install -e .
@@ -68,9 +205,45 @@ That installs the `prompt-sentinel` CLI while sourcing the runtime package from:
 AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/src
 ```
 
-## CLI Surface
+---
 
-Core policy and proposal checks:
+## Fast start
+
+Validate a policy:
+
+```bash
+prompt-sentinel policy validate --policy policy.json
+```
+
+Summarize a policy:
+
+```bash
+prompt-sentinel policy summary --policy policy.json
+```
+
+Check a proposed tool call:
+
+```bash
+prompt-sentinel check-proposal --policy policy.json --proposal proposal.json
+```
+
+Check and execute through the trusted path:
+
+```bash
+prompt-sentinel check-proposal --policy policy.json --proposal proposal.json --execute
+```
+
+Inspect the audit trail:
+
+```bash
+prompt-sentinel audit tail --audit-log prompt_sentinel.audit.jsonl --limit 10
+```
+
+---
+
+## CLI surface
+
+### Core policy and proposal checks
 
 ```bash
 prompt-sentinel check-proposal --policy policy.json --proposal proposal.json
@@ -79,7 +252,9 @@ prompt-sentinel policy validate --policy policy.json
 prompt-sentinel policy summary --policy policy.json
 ```
 
-Signed capability flow:
+### Signed capability flow
+
+Issue a capability ticket:
 
 ```bash
 prompt-sentinel issue-capability \
@@ -90,7 +265,11 @@ prompt-sentinel issue-capability \
   --scope scope.json \
   --params params.json \
   --private-key keys/dev.key
+```
 
+Verify a capability ticket:
+
+```bash
 prompt-sentinel verify-capability \
   --capability ticket.json \
   --public-key keys/dev.key.pub \
@@ -100,42 +279,54 @@ prompt-sentinel verify-capability \
   --scope scope.json
 ```
 
-Audit inspection and export:
+### Audit inspection and export
 
 ```bash
 prompt-sentinel audit tail --audit-log prompt_sentinel.audit.jsonl --limit 10
 prompt-sentinel audit export --audit-log prompt_sentinel.audit.jsonl --destination stdout
 ```
 
-Backward-compatible aliases still exist for `policy-summary`,
-`policy-validate`, `audit-tail`, and `audit-export`.
+Backward-compatible aliases still exist for:
 
-## MCP Poisoning Hardening
+```text
+policy-summary
+policy-validate
+audit-tail
+audit-export
+```
 
-Prompt_Sentinel now includes an MCP admission and pinning layer. It treats MCP
-server metadata, tool descriptors, tool schemas, tool arguments, and tool output
-as untrusted input until the trusted runtime verifies them.
+---
 
-The MCP layer hardens against:
+## MCP poisoning hardening
 
-- poisoned tool descriptions or schemas that contain hidden instructions
-- server rug-pulls where a tool changes after approval
-- unapproved MCP servers or new tools appearing in `tools/list`
-- unsafe STDIO server launches through shells or command injection
-- cross-server data laundering from a trusted server into a third-party server
-- tool output that attempts to trigger follow-up secret reads or exfiltration
-- capability confusion by checking expected operation and scope
+Prompt_Sentinel includes an MCP admission and pinning layer. It treats MCP server metadata, tool descriptors, tool schemas, tool arguments, and tool output as untrusted until the trusted runtime verifies them.
 
-### MCP Admission Workflow
+### Threat coverage
 
-1. Capture the MCP server `tools/list` response to JSON.
-2. Build an admission manifest from that response.
-3. Review descriptor risks and schema hashes.
-4. Pin the approved server, transport, tools, and schema hashes in policy.
-5. Verify the manifest against policy before enabling the server.
-6. Pass MCP tool-call metadata to Prompt_Sentinel at runtime.
+| MCP risk | Prompt_Sentinel control |
+|---|---|
+| Poisoned tool descriptions or schemas | Descriptor review + schema hash pinning |
+| Server rug-pulls after approval | Manifest verification before enablement |
+| Unapproved tools appearing in `tools/list` | Policy-pinned server/tool admission |
+| Unsafe STDIO server launches | Command allowlist + shell/metacharacter denial |
+| Cross-server data laundering | Explicit `mcp_data_flows.allowed` edges |
+| Tool output triggering follow-up secret reads | Output risk scanning + audit/review path |
+| Capability confusion | Expected operation, scope, params, and session checks |
 
-Example:
+### MCP admission workflow
+
+```mermaid
+flowchart TB
+    T[Capture MCP tools/list JSON] --> B[Build admission manifest]
+    B --> R[Review descriptor risks]
+    R --> H[Pin schema hashes]
+    H --> P[Add server, transport, tools to policy]
+    P --> V[Verify manifest against policy]
+    V --> E[Enable server in agent host]
+    E --> C[Runtime MCP proposal checks]
+```
+
+Build a manifest for a streamable HTTP MCP server:
 
 ```bash
 prompt-sentinel mcp build-manifest \
@@ -145,14 +336,17 @@ prompt-sentinel mcp build-manifest \
   --transport streamable-http \
   --server-url https://finance.example/mcp \
   --output finance.manifest.json
+```
 
+Verify the manifest:
+
+```bash
 prompt-sentinel mcp verify-manifest \
   --manifest finance.manifest.json \
   --policy policy.json
 ```
 
-For STDIO MCP servers, the manifest and policy can also include the launch
-command:
+For STDIO MCP servers, the manifest and policy can include the launch command:
 
 ```bash
 prompt-sentinel mcp build-manifest \
@@ -165,12 +359,13 @@ prompt-sentinel mcp build-manifest \
   --output local-search.manifest.json
 ```
 
-STDIO launch policy denies shell usage, unsafe metacharacters, and commands that
-are not allowlisted.
+STDIO launch policy denies shell usage, unsafe metacharacters, and commands that are not allowlisted.
 
-### MCP Policy Fields
+---
 
-MCP policy is expressed alongside normal tool permissions:
+## MCP policy fields
+
+MCP policy is expressed alongside normal tool permissions.
 
 ```json
 {
@@ -223,11 +418,11 @@ MCP policy is expressed alongside normal tool permissions:
 }
 ```
 
-By default, data from one MCP server cannot be passed into a third-party or
-untrusted MCP server unless `mcp_data_flows.allowed` explicitly permits that
-edge.
+By default, data from one MCP server cannot be passed into a third-party or untrusted MCP server unless `mcp_data_flows.allowed` explicitly permits that edge.
 
-### Runtime MCP Calls
+---
+
+## Runtime MCP calls
 
 Host adapters should name MCP tools with one of the supported forms:
 
@@ -251,63 +446,81 @@ MCP proposals should include metadata when available:
 }
 ```
 
-`input_origins` is used for cross-server data-flow checks. Tool output is also
-scanned for prompt-like follow-up instructions and sensitive payload patterns so
-poisoned responses can be audited and reviewed.
+`input_origins` is used for cross-server data-flow checks. Tool output is also scanned for prompt-like follow-up instructions and sensitive payload patterns so poisoned responses can be audited and reviewed.
 
-## Policy Packs
+---
 
-The packaged runtime ships with starter policy packs:
+## Policy packs
 
-- Core default:
-  `AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/src/prompt_sentinel/policies/default-policy.json`
-- Guard team:
-  `AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/src/prompt_sentinel/policies/guard-team-policy.json`
-- Enterprise default:
-  `AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/src/prompt_sentinel/policies/enterprise-default-policy.json`
+The packaged runtime ships with starter policy packs.
+
+| Pack | Path | Use |
+|---|---|---|
+| Core default | `AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/src/prompt_sentinel/policies/default-policy.json` | Local default runtime policy |
+| Guard team | `AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/src/prompt_sentinel/policies/guard-team-policy.json` | Team-oriented presets |
+| Enterprise default | `AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/src/prompt_sentinel/policies/enterprise-default-policy.json` | Enterprise control-plane baseline |
 
 These policies cover:
 
-- tool allowlists and parameter allowlists
-- path controls and quotas
-- sensitive action classes
-- approval scopes and operations
+- Tool allowlists and parameter allowlists
+- Path controls and quotas
+- Sensitive action classes
+- Approval scopes and operations
 - MCP transport rules, server pins, and data-flow rules
-- audit retention classes
-- inheritance hooks for managed policy layering
+- Audit retention classes
+- Inheritance hooks for managed policy layering
 
-## Runtime Guarantees
+---
 
-Prompt_Sentinel's strongest guarantees are host-enforced:
+## Runtime guarantees
 
-- sealed policy stays outside model context
-- signed capability tickets bind approvals to session, audience, expiry, nonce,
-  operation, scope, and exact parameters
-- every tool decision is audit-chained
-- MCP servers and tools are admitted only after manifest and policy checks
-- policy denials are explicit instead of being silently worked around
+Prompt_Sentinel's strongest guarantees are host-enforced.
 
-## Hooks And Adapters
+| Guarantee | Why it matters |
+|---|---|
+| **Sealed policy stays outside model context** | The model cannot rewrite the rules that govern its tools. |
+| **Signed capability tickets bind approval context** | Approvals are tied to session, audience, expiry, nonce, operation, scope, and exact parameters. |
+| **Every tool decision is audit-chained** | Allows review of allowed, denied, and capability-mediated actions. |
+| **MCP servers and tools require admission** | Tools are enabled only after manifest and policy checks. |
+| **Policy denials are explicit** | Unsafe actions are not silently worked around. |
 
-Claude and Codex adapters call the shared runtime helpers instead of duplicating
-authorization logic. The Claude hook matcher now covers standard local tools and
-MCP tool names:
+---
+
+## Hooks and adapters
+
+Claude and Codex adapters call the shared runtime helpers instead of duplicating authorization logic.
+
+The Claude hook matcher covers standard local tools and MCP tool names:
 
 ```text
 Bash|Edit|Write|mcp__.*|mcp:.*
 ```
 
-Hooks evaluate proposals with `execute=false`, which lets the host deny unsafe
-MCP/tool proposals without executing them locally. Trusted execution remains a
-separate runtime step.
+Hooks evaluate proposals with `execute=false`, which lets the host deny unsafe MCP/tool proposals without executing them locally. Trusted execution remains a separate runtime step.
+
+---
+
+## Repository map
+
+| Path | Purpose |
+|---|---|
+| `AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/` | Authoritative installable runtime and CLI used by the root package |
+| `AGENT_CORE/prompt-sentinel-codex/` | Codex plugin and skill distribution layer |
+| `AGENT_CORE/prompt-sentinel-control-plane/` | Enterprise control-plane skeleton and schemas |
+| `AGENT_CORE/prompt-sentinel-core/` | Standalone runtime copy kept in sync for packaging/distribution work |
+| `V1_Prompt_Sentinel/prompt-sentinel-core/` | V1 package copy kept in sync for compatibility |
+| `V3_LLM_Boundary_Crypto_end_to_end.py` | Original end-to-end prototype kept as a runnable reference |
+| `deployment_guide.md` | Framework integration examples for LangChain, LlamaIndex, and FastAPI |
+
+---
 
 ## Schemas
 
 Installable schemas ship with the runtime package:
 
-- policy bundle schema
-- capability ticket schema
-- audit export record schema
+- Policy bundle schema
+- Capability ticket schema
+- Audit export record schema
 
 See:
 
@@ -321,9 +534,11 @@ Enterprise-facing schemas remain under:
 AGENT_CORE/prompt-sentinel-control-plane/schemas/
 ```
 
+---
+
 ## Development
 
-Run focused tests from the repo root:
+Run focused tests from the repository root:
 
 ```bash
 python -m pytest AGENT_CORE/prompt-sentinel-claude/prompt-sentinel-core/tests -q
@@ -337,10 +552,13 @@ The original V3 demo remains useful for concept validation:
 python V3_LLM_Boundary_Crypto_end_to_end.py
 ```
 
-## Current Security Posture
+---
 
-The project is now partially hardened against MCP poisoning in the places this
-repo controls:
+## Current security posture
+
+The project is partially hardened against MCP poisoning in the places this repository controls.
+
+### Hardened now
 
 - MCP admission manifests pin full tool descriptors by hash.
 - Policy verifies approved servers, transports, tools, and schema hashes.
@@ -349,7 +567,22 @@ repo controls:
 - Cross-server data flows are explicit.
 - Tool output risk is audited.
 
-Remaining hardening depends on host integration: the agent host must capture
-`tools/list`, run manifest verification before enabling servers, pass schema
-hash metadata on MCP calls, and keep Prompt_Sentinel outside model-controlled
-state.
+### Host integration still required
+
+Remaining hardening depends on the agent host. The host must:
+
+- Capture `tools/list` from MCP servers.
+- Run manifest verification before enabling servers.
+- Pass schema hash metadata on MCP calls.
+- Preserve Prompt_Sentinel outside model-controlled state.
+- Route execution through the trusted runtime instead of letting model output execute directly.
+
+---
+
+<div align="center">
+
+### Prompt_Sentinel turns agent autonomy into governed execution.
+
+**The model proposes. The runtime authorizes. The audit trail remembers.**
+
+</div>
